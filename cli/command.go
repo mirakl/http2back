@@ -24,16 +24,29 @@ func Process(appName, appDesc, appVersion string) {
 	port = app.IntOpt("p port", 8080, "Port to listen connections from")
 	maxmemmb = app.IntOpt("m maxmemmb", 8, "Max memory allocated (MiB) for buffering a file to the backend")
 
-	notif.ApiKey = app.String(cli.StringOpt{
-		Name:   "apikey",
-		Desc:   "Datadog api key to send notification (Env: DATADOG_API_KEY)",
-		EnvVar: "DATADOG_API_KEY",
-	})
-	notif.AppKey = app.String(cli.StringOpt{
-		Name:   "y appkey",
-		Desc:   "Datadog app key to send notification (Env: DATADOG_APP_KEY)",
-		EnvVar: "DATADOG_APP_KEY",
-	})
+	var (
+		apiKey = app.String(cli.StringOpt{
+			Name:   "apikey",
+			Desc:   "Datadog api key to send notification",
+			EnvVar: "DATADOG_API_KEY",
+		})
+		appKey = app.String(cli.StringOpt{
+			Name:   "y appkey",
+			Desc:   "Datadog app key to send notification",
+			EnvVar: "DATADOG_APP_KEY",
+		})
+		extraTags = app.Strings(cli.StringsOpt{
+			Name:   "x extratag",
+			Desc:   "Datadog event extra tags",
+			EnvVar: "EXTRA_TAGS",
+		})
+	)
+
+	app.Before = func() {
+		notif.ApiKey = *apiKey
+		notif.AppKey = *appKey
+		notif.ExtraTags = *extraTags
+	}
 
 	app.Command("filesystem fs", "Use filesystem provider", providerFilesystem)
 	app.Command("ftp", "Use FTP provider", providerFtp)
@@ -44,11 +57,10 @@ func Process(appName, appDesc, appVersion string) {
 }
 
 func getNotifier() notifier.Notifier {
-	if notif.ApiKey != nil && *notif.ApiKey != "" {
+	if notif.ApiKey != "" {
 		return notif
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func providerFilesystem(cmd *cli.Cmd) {
