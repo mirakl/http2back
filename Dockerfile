@@ -17,12 +17,12 @@ RUN glide install
 
 RUN make build
 
-FROM centos:7
+FROM gcr.io/distroless/base
 
 COPY --from=builder /go/src/github.com/mirakl/http2back/bin/http2back /bin
-RUN chmod +x /bin/http2back
 
 EXPOSE 8080
 
 USER nobody
+
 ENTRYPOINT ["/bin/http2back"]
