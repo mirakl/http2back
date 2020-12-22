@@ -17,7 +17,7 @@ RUN glide install
 
 RUN make build
 
-FROM gcr.io/distroless/base
+FROM gcr.io/distroless/static
 
 COPY --from=builder /go/src/github.com/mirakl/http2back/bin/http2back /bin
 
